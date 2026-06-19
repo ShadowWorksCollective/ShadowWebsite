@@ -1,0 +1,39 @@
+---
+// Markdoc {% callout %} block — a styled aside editors can insert into bodies.
+interface Props {
+  kind?: 'note' | 'info' | 'warning';
+  title?: string;
+}
+const { kind = 'note', title } = Astro.props;
+const labels = { note: 'Note', info: 'Info', warning: 'Heads up' } as const;
+---
+
+<aside class={`callout callout--${kind}`} role="note">
+  <p class="callout-title">{title ?? labels[kind]}</p>
+  <div class="callout-body"><slot /></div>
+</aside>
+
+<style>
+  .callout {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    margin-block: 1.5em;
+  }
+  .callout--warning {
+    border-left-color: #ffb454;
+  }
+  .callout-title {
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: 0.25rem;
+  }
+  .callout-body {
+    color: var(--fg-dim);
+  }
+  .callout-body :global(> * + *) {
+    margin-top: 0.6em;
+  }
+</style>

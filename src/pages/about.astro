@@ -1,0 +1,30 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getAbout } from '../lib/queries';
+
+const about = await getAbout();
+const data = about?.data;
+const rendered = about ? await render(about) : null;
+const Content = rendered?.Content;
+---
+
+<BaseLayout title={data?.title ?? 'About'} description={data?.intro}>
+  <section class="section container container--narrow">
+    <p class="eyebrow">About</p>
+    <h1>{data?.title ?? 'About'}</h1>
+    {data?.intro && <p class="lead dim">{data.intro}</p>}
+    {Content && <div class="prose body"><Content /></div>}
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    margin-top: 0.6rem;
+    font-size: var(--step-1);
+    max-width: 60ch;
+  }
+  .body {
+    margin-top: var(--section-y);
+  }
+</style>

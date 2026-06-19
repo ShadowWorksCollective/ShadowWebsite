@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import WorkCard from './WorkCard.astro';
+
+interface Props {
+  items: (CollectionEntry<'works'> | CollectionEntry<'commissions'>)[];
+  base: 'works' | 'commissions';
+  emptyText?: string;
+}
+const { items, base, emptyText = 'Nothing here yet.' } = Astro.props;
+---
+
+{
+  items.length === 0 ? (
+    <p class="muted">{emptyText}</p>
+  ) : (
+    <ul class="grid" role="list">
+      {items.map((entry) => (
+        <li>
+          <WorkCard entry={entry} base={base} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--gap);
+  }
+</style>

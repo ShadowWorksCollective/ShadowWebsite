@@ -1,0 +1,131 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Gallery from '../../components/Gallery.astro';
+import EventList from '../../components/EventList.astro';
+import { entryAsset } from '../../lib/images';
+import { getEventsForWork } from '../../lib/queries';
+
+export async function getStaticPaths() {
+  const works = (await getCollection('works')).filter((w) =>
+    import.meta.env.PROD ? !w.data.draft : true,
+  );
+  return works.map((work) => ({ params: { slug: work.id }, props: { work } }));
+}
+
+const { work } = Astro.props;
+const { data } = work;
+const cover = entryAsset(work, data.cover);
+const { Content } = await render(work);
+const events = await getEventsForWork(work.id);
+---
+
+<BaseLayout title={data.title} description={data.shortDescription} image={cover} article>
+  <article>
+    <header class="container detail-head">
+      <p class="eyebrow">Work · {data.year}</p>
+      <h1>{data.title}</h1>
+      <p class="lead dim">{data.shortDescription}</p>
+      {
+        data.medium.length > 0 && (
+          <ul class="tag-row" aria-label="Medium">
+            {data.medium.map((m) => (
+              <li class="tag">{m}</li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    <div class="container cover-wrap">
+      <Image
+        src={cover}
+        alt={data.coverAlt}
+        widths={[640, 1000, 1400, 1920]}
+        sizes="(min-width: 1200px) 1100px, 100vw"
+      />
+    </div>
+
+    <div class="container body-grid">
+      <div class="prose"><Content /></div>
+      {
+        data.artists.length > 0 && (
+          <aside class="meta-aside">
+            <h2 class="aside-title">Artists</h2>
+            <ul>
+              {data.artists.map((a) => (
+                <li>{a}</li>
+              ))}
+            </ul>
+          </aside>
+        )
+      }
+    </div>
+
+    <div class="container gallery-wrap">
+      <Gallery entry={work} />
+    </div>
+
+    {
+      events.length > 0 && (
+        <section class="section container">
+          <EventList items={events} heading="Where it's been shown" />
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .detail-head {
+    padding-top: var(--section-y);
+  }
+  .lead {
+    max-width: 60ch;
+    margin-top: 0.6rem;
+    font-size: var(--step-1);
+  }
+  .tag-row {
+    margin-top: 1.2rem;
+  }
+  .cover-wrap {
+    margin-top: var(--gap);
+  }
+  .cover-wrap :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  .body-grid {
+    margin-top: var(--section-y);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--gap);
+  }
+  @media (min-width: 900px) {
+    .body-grid {
+      grid-template-columns: minmax(0, 1fr) 220px;
+    }
+  }
+  .meta-aside {
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+  }
+  .aside-title {
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .meta-aside ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.5rem;
+    color: var(--fg-dim);
+  }
+  .gallery-wrap {
+    margin-top: var(--section-y);
+  }
+</style>

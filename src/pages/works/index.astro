@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WorkGrid from '../../components/WorkGrid.astro';
+import { getAllWorks } from '../../lib/queries';
+
+const works = await getAllWorks();
+---
+
+<BaseLayout title="Works" description="Light-based artworks by the ShadowWorks collective.">
+  <section class="section container">
+    <p class="eyebrow">Archive</p>
+    <h1>Works</h1>
+    <p class="lead dim">Our own pieces — light, motion, and sound.</p>
+    <div class="grid-wrap">
+      <WorkGrid items={works} base="works" emptyText="No works published yet." />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    max-width: 60ch;
+    margin-top: 0.5rem;
+  }
+  .grid-wrap {
+    margin-top: var(--section-y);
+  }
+</style>

@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WorkGrid from '../../components/WorkGrid.astro';
+import { getAllCommissions } from '../../lib/queries';
+
+const commissions = await getAllCommissions();
+---
+
+<BaseLayout
+  title="Commissions"
+  description="Bespoke light installations and systems developed for clients and venues."
+>
+  <section class="section container">
+    <p class="eyebrow">For clients &amp; venues</p>
+    <h1>Commissions</h1>
+    <p class="lead dim">Bespoke installations and systems developed for other people and places.</p>
+    <div class="grid-wrap">
+      <WorkGrid items={commissions} base="commissions" emptyText="No commissions published yet." />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    max-width: 60ch;
+    margin-top: 0.5rem;
+  }
+  .grid-wrap {
+    margin-top: var(--section-y);
+  }
+</style>

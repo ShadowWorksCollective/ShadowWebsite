@@ -1,0 +1,56 @@
+---
+// Lazy, privacy-friendly 16:9 provider embed. Used both as a gallery item and
+// as a Markdoc {% video %} tag (see src/markdoc.config.mjs).
+interface Props {
+  provider: 'youtube' | 'vimeo';
+  videoId: string;
+  title?: string;
+  caption?: string;
+}
+const { provider, videoId, title, caption } = Astro.props;
+
+const src =
+  provider === 'youtube'
+    ? `https://www.youtube-nocookie.com/embed/${videoId}`
+    : `https://player.vimeo.com/video/${videoId}?dnt=1`;
+const label = title ?? (provider === 'youtube' ? 'YouTube video' : 'Vimeo video');
+---
+
+<figure class="video-embed">
+  <div class="frame">
+    <iframe
+      src={src}
+      title={label}
+      loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+      referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .video-embed {
+    margin: 0;
+  }
+  .frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--line);
+  }
+  iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  figcaption {
+    color: var(--muted);
+    font-size: var(--step--1);
+    margin-top: 0.5rem;
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSettings } from '../lib/queries';
+
+const s = (await getSettings()).data;
+---
+
+<BaseLayout title="Contact" description="Get in touch with ShadowWorks about exhibitions, commissions, and show lighting.">
+  <section class="section container container--narrow">
+    <p class="eyebrow">Contact</p>
+    <h1>Get in touch</h1>
+    {s.contactText && <p class="lead dim">{s.contactText}</p>}
+
+    {
+      s.contactEmail && (
+        <p class="email-cta">
+          <a class="btn btn--primary" href={`mailto:${s.contactEmail}`}>
+            Email {s.contactEmail}
+          </a>
+        </p>
+      )
+    }
+
+    {
+      s.socials.length > 0 && (
+        <div class="socials">
+          <h2 class="socials-title">Elsewhere</h2>
+          <ul>
+            {s.socials.map((social) => (
+              <li>
+                <a href={social.url} target="_blank" rel="noopener">
+                  {social.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <p class="note muted">
+      A contact form is on the way. For now, email is the fastest way to reach us.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    margin-top: 0.6rem;
+    font-size: var(--step-1);
+    max-width: 55ch;
+  }
+  .email-cta {
+    margin-top: 1.75rem;
+  }
+  .socials {
+    margin-top: var(--section-y);
+  }
+  .socials-title {
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .socials ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .socials a {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .socials a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 0.2em;
+  }
+  .note {
+    margin-top: var(--section-y);
+    font-size: var(--step--1);
+  }
+</style>

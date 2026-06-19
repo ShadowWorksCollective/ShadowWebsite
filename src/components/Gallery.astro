@@ -1,0 +1,59 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { entryAsset } from '../lib/images';
+import VideoEmbed from './VideoEmbed.astro';
+
+interface Props {
+  entry: CollectionEntry<'works'> | CollectionEntry<'commissions'>;
+}
+const { entry } = Astro.props;
+const items = entry.data.gallery ?? [];
+---
+
+{
+  items.length > 0 && (
+    <div class="gallery">
+      {items.map((item) =>
+        item.type === 'image' && item.src ? (
+          <figure class="gallery-item">
+            <Image
+              src={entryAsset(entry, item.src)}
+              alt={item.alt ?? ''}
+              widths={[480, 800, 1200]}
+              sizes="(min-width: 820px) 760px, 100vw"
+            />
+            {item.caption && <figcaption>{item.caption}</figcaption>}
+          </figure>
+        ) : item.type === 'video' && item.provider && item.videoId ? (
+          <VideoEmbed
+            provider={item.provider}
+            videoId={item.videoId}
+            caption={item.caption}
+          />
+        ) : null,
+      )}
+    </div>
+  )
+}
+
+<style>
+  .gallery {
+    display: grid;
+    gap: var(--gap);
+  }
+  .gallery-item {
+    margin: 0;
+  }
+  .gallery-item :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  figcaption {
+    color: var(--muted);
+    font-size: var(--step--1);
+    margin-top: 0.5rem;
+  }
+</style>

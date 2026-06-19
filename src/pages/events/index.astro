@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventList from '../../components/EventList.astro';
+import { getUpcomingEvents, getPastEvents } from '../../lib/queries';
+
+const upcoming = await getUpcomingEvents();
+const past = await getPastEvents();
+---
+
+<BaseLayout title="Events" description="Live show lighting and exhibitions by ShadowWorks.">
+  <section class="section container">
+    <p class="eyebrow">Calendar &amp; archive</p>
+    <h1>Events</h1>
+    <p class="lead dim">Lighting design for live music, and exhibitions of our work.</p>
+
+    <div class="lists">
+      <EventList
+        items={upcoming}
+        heading="Upcoming &amp; current"
+        emptyText="Nothing on the calendar right now — check back soon."
+      />
+      <EventList items={past} heading="Past events" emptyText="No past events archived yet." />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    max-width: 60ch;
+    margin-top: 0.5rem;
+  }
+  .lists {
+    margin-top: var(--section-y);
+    display: grid;
+    gap: var(--section-y);
+  }
+</style>

@@ -1,0 +1,182 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  headline: string;
+  tagline?: string;
+  poster: ImageMetadata;
+  posterAlt: string;
+  videoSrc?: string; // optional /public path to a compressed mp4 loop
+  videoWebm?: string; // optional /public path to a webm source
+}
+const { headline, tagline, poster, posterAlt, videoSrc, videoWebm } = Astro.props;
+const hasVideo = Boolean(videoSrc);
+---
+
+<section class="hero" data-has-video={hasVideo ? 'true' : 'false'}>
+  <div class="media">
+    <Image
+      class="poster"
+      src={poster}
+      alt={posterAlt}
+      priority
+      widths={[768, 1280, 1920, 2400]}
+      sizes="100vw"
+    />
+    {
+      hasVideo && (
+        <video
+          class="loop"
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster={poster.src}
+          aria-hidden="true"
+        >
+          {videoWebm && <source src={videoWebm} type="video/webm" />}
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+      )
+    }
+    <div class="scrim"></div>
+  </div>
+
+  <div class="container hero-content">
+    <h1>{headline}</h1>
+    {tagline && <p class="tagline">{tagline}</p>}
+    <div class="cta">
+      <a class="btn btn--primary" href="/works">View the work</a>
+      <a class="btn" href="/contact">Get in touch</a>
+    </div>
+  </div>
+
+  {
+    hasVideo && (
+      <button class="motion-toggle" type="button" aria-pressed="false" hidden>
+        <span class="label">Play background video</span>
+      </button>
+    )
+  }
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: min(86svh, 760px);
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .poster,
+  .loop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .loop {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .loop.is-playing {
+    opacity: 1;
+  }
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 12, 0.92) 0%,
+      rgba(10, 10, 12, 0.45) 45%,
+      rgba(10, 10, 12, 0.25) 100%
+    );
+  }
+  .hero-content {
+    padding-block: clamp(2.5rem, 1.5rem + 5vw, 5rem);
+    max-width: 900px;
+  }
+  .hero-content h1 {
+    max-width: 16ch;
+  }
+  .tagline {
+    margin-top: 1rem;
+    font-size: var(--step-1);
+    color: var(--fg-dim);
+    max-width: 52ch;
+  }
+  .cta {
+    margin-top: 1.75rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .motion-toggle {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 3;
+    border: 1px solid var(--line-strong);
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    color: var(--fg);
+    border-radius: 999px;
+    padding: 0.5em 1em;
+    font: inherit;
+    font-size: var(--step--1);
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+</style>
+
+<script>
+  // Accessible background video: never autoplays via attribute. Plays only when
+  // motion is allowed; always offers a manual pause/play control (WCAG 2.2.2).
+  document.querySelectorAll<HTMLElement>('.hero[data-has-video="true"]').forEach((hero) => {
+    const video = hero.querySelector<HTMLVideoElement>('video.loop');
+    const toggle = hero.querySelector<HTMLButtonElement>('.motion-toggle');
+    const label = toggle?.querySelector<HTMLElement>('.label');
+    if (!video || !toggle || !label) return;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const setState = (playing: boolean) => {
+      toggle.setAttribute('aria-pressed', String(playing));
+      label.textContent = playing ? 'Pause background video' : 'Play background video';
+    };
+
+    const play = async () => {
+      try {
+        await video.play();
+        video.classList.add('is-playing');
+        setState(true);
+      } catch {
+        setState(false);
+      }
+    };
+    const pause = () => {
+      video.pause();
+      video.classList.remove('is-playing');
+      setState(false);
+    };
+
+    toggle.hidden = false;
+    setState(false);
+
+    if (!reduce.matches) play();
+
+    toggle.addEventListener('click', () => {
+      video.paused ? play() : pause();
+    });
+    reduce.addEventListener('change', (e) => {
+      if (e.matches) pause();
+    });
+  });
+</script>

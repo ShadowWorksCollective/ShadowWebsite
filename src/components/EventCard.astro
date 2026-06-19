@@ -1,0 +1,130 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { entryAsset } from '../lib/images';
+import { formatDateRange, kindLabel } from '../lib/format';
+
+interface Props {
+  entry: CollectionEntry<'events'>;
+}
+const { entry } = Astro.props;
+const { data } = entry;
+const href = `/events/${entry.id}`;
+const poster = data.poster ? entryAsset(entry, data.poster) : null;
+const now = Date.now();
+const startTime = data.startDate.getTime();
+const endTime = (data.endDate ?? data.startDate).getTime();
+const status: 'past' | 'current' | 'upcoming' =
+  endTime < now ? 'past' : startTime > now ? 'upcoming' : 'current';
+const isUpcoming = status !== 'past';
+const location = [data.venue, data.city].filter(Boolean).join(', ');
+---
+
+<article class="event">
+  <a class="poster" href={href} aria-hidden="true" tabindex="-1">
+    {
+      poster ? (
+        <Picture
+          src={poster}
+          formats={['avif', 'webp']}
+          alt={data.posterAlt ?? ''}
+          widths={[200, 300, 400]}
+          sizes="(min-width: 700px) 200px, 35vw"
+        />
+      ) : (
+        <span class="poster-fallback">{kindLabel(data.kind)}</span>
+      )
+    }
+  </a>
+
+  <div class="event-body">
+    <p class="date">
+      <time datetime={data.startDate.toISOString()}>
+        {formatDateRange(data.startDate, data.endDate)}
+      </time>
+      {status === 'current' && <span class="badge">On now</span>}
+      {status === 'upcoming' && <span class="badge">Upcoming</span>}
+    </p>
+    <h3><a href={href}>{data.title}</a></h3>
+    <p class="loc muted">{location} · {kindLabel(data.kind)}</p>
+    <p class="desc dim">{data.shortDescription}</p>
+    {
+      isUpcoming && data.ticketUrl && (
+        <a class="btn tickets" href={data.ticketUrl} target="_blank" rel="noopener">
+          Tickets ↗
+        </a>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .event {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: clamp(1rem, 0.5rem + 2vw, 1.75rem);
+    padding-block: 1.6rem;
+    border-top: 1px solid var(--line);
+  }
+  .poster {
+    display: block;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+  }
+  .poster :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .poster-fallback {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: 0.5rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+  .event-body {
+    min-width: 0;
+  }
+  .date {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    font-size: var(--step--1);
+    color: var(--fg-dim);
+  }
+  h3 {
+    font-size: var(--step-2);
+    margin-top: 0.35rem;
+  }
+  h3 a {
+    text-decoration: none;
+  }
+  h3 a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 0.2em;
+  }
+  .loc {
+    font-size: var(--step--1);
+    margin-top: 0.35rem;
+  }
+  .desc {
+    margin-top: 0.6rem;
+    max-width: 60ch;
+  }
+  .tickets {
+    margin-top: 1rem;
+  }
+  @media (max-width: 540px) {
+    .event {
+      grid-template-columns: 90px 1fr;
+    }
+  }
+</style>

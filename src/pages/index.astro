@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import VideoHero from '../components/VideoHero.astro';
+import WorkGrid from '../components/WorkGrid.astro';
+import EventList from '../components/EventList.astro';
+import { getSettings, getFeaturedWorks, getUpcomingEvents } from '../lib/queries';
+import { entryAsset } from '../lib/images';
+
+const settings = await getSettings();
+const s = settings.data;
+const heroPoster = entryAsset(settings, s.heroPoster);
+const featured = await getFeaturedWorks(6);
+const upcoming = await getUpcomingEvents(3);
+---
+
+<BaseLayout description={s.heroTagline} image={heroPoster}>
+  <VideoHero
+    headline={s.heroHeadline}
+    tagline={s.heroTagline}
+    poster={heroPoster}
+    posterAlt={s.heroPosterAlt}
+    videoSrc={s.heroVideoSrc}
+    videoWebm={s.heroVideoWebm}
+  />
+
+  <section class="section container">
+    <div class="section-head">
+      <h2>Featured works</h2>
+      <a href="/works">All works →</a>
+    </div>
+    <WorkGrid items={featured} base="works" emptyText="No featured works yet." />
+  </section>
+
+  <section class="section container">
+    <div class="section-head">
+      <h2>Upcoming &amp; current events</h2>
+      <a href="/events">All events →</a>
+    </div>
+    <EventList
+      items={upcoming}
+      emptyText="Nothing on the calendar right now — check back soon."
+    />
+  </section>
+
+  <section class="section container">
+    <div class="cta-panel">
+      <h2>Work with us</h2>
+      <p class="dim">Exhibitions, commissions, show lighting — we'd love to hear about it.</p>
+      <a class="btn btn--primary" href="/contact">Get in touch</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .cta-panel {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: clamp(2rem, 1rem + 5vw, 4rem);
+    text-align: center;
+  }
+  .cta-panel p {
+    margin-top: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import EventCard from './EventCard.astro';
+
+// The single reusable events-listing module. Pure presentation — it never
+// queries content. Fed different results from src/lib/queries.ts on the home
+// page, the events page (upcoming + past), and each work's page.
+interface Props {
+  items: CollectionEntry<'events'>[];
+  heading?: string;
+  emptyText?: string;
+}
+const { items, heading, emptyText = 'No events to show.' } = Astro.props;
+---
+
+<section class="event-list">
+  {heading && <h2 class="list-heading">{heading}</h2>}
+  {
+    items.length === 0 ? (
+      <p class="muted">{emptyText}</p>
+    ) : (
+      <div class="events">
+        {items.map((entry) => (
+          <EventCard entry={entry} />
+        ))}
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .list-heading {
+    font-size: var(--step-2);
+    margin-bottom: 0.5rem;
+  }
+  /* the first card's top border doubles as the list's top rule */
+  .events {
+    border-bottom: 1px solid var(--line);
+  }
+</style>

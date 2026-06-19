@@ -1,0 +1,22 @@
+# Rebuilds the static site on a schedule so the "upcoming vs past" events split
+# (computed at build time) stays current between content edits.
+#
+# Setup: in Cloudflare Pages create a Deploy Hook, then add its URL as a GitHub
+# repo secret named CLOUDFLARE_DEPLOY_HOOK_URL (Settings → Secrets → Actions).
+name: Scheduled rebuild
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # daily at 06:00 UTC
+  workflow_dispatch: {} # allow manual runs
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloudflare Pages deploy
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}" ]; then
+            echo "CLOUDFLARE_DEPLOY_HOOK_URL secret not set — skipping."; exit 0
+          fi
+          curl -fsS -X POST "${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}"

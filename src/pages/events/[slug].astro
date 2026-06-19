@@ -1,0 +1,119 @@
+---
+import { getCollection, getEntries, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WorkGrid from '../../components/WorkGrid.astro';
+import { entryAsset } from '../../lib/images';
+import { formatDateRange, kindLabel } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const events = (await getCollection('events')).filter((e) =>
+    import.meta.env.PROD ? !e.data.draft : true,
+  );
+  return events.map((event) => ({ params: { slug: event.id }, props: { event } }));
+}
+
+const { event } = Astro.props;
+const { data } = event;
+const poster = data.poster ? entryAsset(event, data.poster) : null;
+const { Content } = await render(event);
+const works = data.relevantWorks.length
+  ? (await getEntries(data.relevantWorks)).filter(Boolean)
+  : [];
+const location = [data.venue, data.city].filter(Boolean).join(', ');
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.shortDescription}
+  image={poster ?? undefined}
+  article
+>
+  <article class="container">
+    <div class="event-detail">
+      {
+        poster && (
+          <div class="poster">
+            <Image
+              src={poster}
+              alt={data.posterAlt ?? ''}
+              widths={[320, 480, 640]}
+              sizes="(min-width: 760px) 320px, 60vw"
+            />
+          </div>
+        )
+      }
+      <header class="detail-head">
+        <p class="eyebrow">{kindLabel(data.kind)}</p>
+        <h1>{data.title}</h1>
+        <p class="when">{formatDateRange(data.startDate, data.endDate)}</p>
+        <p class="where dim">{location}</p>
+        <p class="lead dim">{data.shortDescription}</p>
+        {
+          data.ticketUrl && (
+            <a class="btn btn--primary" href={data.ticketUrl} target="_blank" rel="noopener">
+              Tickets ↗
+            </a>
+          )
+        }
+      </header>
+    </div>
+
+    <div class="prose body">
+      <Content />
+    </div>
+
+    {
+      works.length > 0 && (
+        <section class="section related">
+          <h2>Works shown</h2>
+          <WorkGrid items={works} base="works" />
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .event-detail {
+    padding-top: var(--section-y);
+    display: grid;
+    gap: var(--gap);
+    align-items: start;
+  }
+  @media (min-width: 760px) {
+    .event-detail {
+      grid-template-columns: 320px 1fr;
+      gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+    }
+  }
+  .poster :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  .when {
+    font-size: var(--step-1);
+    margin-top: 0.6rem;
+  }
+  .where {
+    margin-top: 0.2rem;
+  }
+  .lead {
+    margin-top: 1rem;
+    max-width: 55ch;
+  }
+  .btn {
+    margin-top: 1.5rem;
+  }
+  .body {
+    margin-top: var(--section-y);
+  }
+  .related {
+    border-top: 1px solid var(--line);
+  }
+  .related h2 {
+    margin-bottom: var(--gap);
+  }
+</style>

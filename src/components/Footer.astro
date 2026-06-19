@@ -1,0 +1,96 @@
+---
+import { getSettings } from '../lib/queries';
+
+const settings = (await getSettings()).data;
+const year = new Date().getFullYear();
+
+const links = [
+  { href: '/works', label: 'Works' },
+  { href: '/events', label: 'Events' },
+  { href: '/commissions', label: 'Commissions' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+];
+---
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="stack">
+      <p class="brand">ShadowWorks</p>
+      <p class="muted">Audiovisual artist collective — light, motion, sound.</p>
+    </div>
+
+    <nav aria-label="Footer">
+      <ul>
+        {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <div class="stack">
+      {
+        settings.contactEmail && (
+          <a class="contact" href={`mailto:${settings.contactEmail}`}>
+            {settings.contactEmail}
+          </a>
+        )
+      }
+      <ul class="socials">
+        {
+          settings.socials.map((s) => (
+            <li>
+              <a href={s.url} target="_blank" rel="noopener">
+                {s.label} ↗
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="copyright muted">© {year} ShadowWorks. All rights reserved.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: auto;
+    border-top: 1px solid var(--line);
+    padding-block: var(--section-y) 2rem;
+    background: var(--bg-elev);
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--gap);
+    padding-bottom: 2.5rem;
+  }
+  .brand {
+    font-weight: 600;
+    font-size: var(--step-1);
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  a {
+    text-decoration: none;
+    color: var(--fg-dim);
+  }
+  a:hover {
+    color: var(--fg);
+  }
+  .contact {
+    color: var(--fg);
+  }
+  .copyright {
+    font-size: var(--step--1);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+</style>
